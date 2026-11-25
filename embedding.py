@@ -83,7 +83,7 @@ def get_db_connection():
 
 
 def init_database(dimensions: int = 1024):
-    """Ensure pgvector extension and document_chunks table exist with HNSW index."""
+    """Ensure pgvector extension, document_chunks table, and metadata support exist with HNSW index."""
     conn = get_db_connection()
     cur = conn.cursor()
     cur.execute("CREATE EXTENSION IF NOT EXISTS vector;")
@@ -93,12 +93,21 @@ def init_database(dimensions: int = 1024):
             source TEXT NOT NULL,
             text TEXT NOT NULL,
             embedding vector({dimensions}),
+            metadata JSONB DEFAULT '{{}}'::jsonb,
             created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
         );
+    """)
+    # Add metadata column if existing table lacks it
+    cur.execute("""
+        ALTER TABLE document_chunks ADD COLUMN IF NOT EXISTS metadata JSONB DEFAULT '{}'::jsonb;
     """)
     cur.execute("""
         CREATE INDEX IF NOT EXISTS document_chunks_embedding_hnsw_idx 
         ON document_chunks USING hnsw (embedding vector_cosine_ops);
+    """)
+    cur.execute("""
+        CREATE INDEX IF NOT EXISTS document_chunks_metadata_gin_idx
+        ON document_chunks USING gin (metadata);
     """)
     conn.commit()
     cur.close()
@@ -113,18 +122,20 @@ def download_data_from_db(output_file: str = "embeddings.json") -> int:
     conn = get_db_connection()
     cur = conn.cursor()
     print(f"📥 Exporting data from Docker PostgreSQL to '{output_path}'...")
-    cur.execute("SELECT id, source, text, embedding::text FROM document_chunks ORDER BY id;")
+    cur.execute("SELECT id, source, text, embedding::text, COALESCE(metadata, '{}'::jsonb)::text FROM document_chunks ORDER BY id;")
     rows = cur.fetchall()
 
     documents = []
     for row in rows:
         vec_str = row[3].strip("[]") if row[3] else ""
         vector = [float(v) for v in vec_str.split(",")] if vec_str else []
+        meta = json.loads(row[4]) if row[4] else {}
         documents.append({
             "id": row[0],
             "source": row[1],
             "text": row[2],
             "vector": vector,
+            "metadata": meta,
         })
 
     data = {
@@ -169,9 +180,12 @@ def import_embeddings_to_db(input_file: str = "embeddings.json", batch_size: int
 
     print(f"🚀 Inserting {len(docs)} chunks into PostgreSQL pgvector...")
     insert_sql = """
-        INSERT INTO document_chunks (id, source, text, embedding)
-        VALUES (%s, %s, %s, %s::vector)
-        ON CONFLICT (id) DO NOTHING;
+        INSERT INTO document_chunks (id, source, text, embedding, metadata)
+        VALUES (%s, %s, %s, %s::vector, %s::jsonb)
+        ON CONFLICT (id) DO UPDATE
+        SET text = EXCLUDED.text,
+            embedding = EXCLUDED.embedding,
+            metadata = EXCLUDED.metadata;
     """
 
     for i in range(0, len(docs), batch_size):
@@ -179,7 +193,8 @@ def import_embeddings_to_db(input_file: str = "embeddings.json", batch_size: int
         values = []
         for doc in batch:
             vec = doc.get("vector") or doc.get("embedding", [])
-            values.append((doc["id"], doc.get("source", "unknown"), doc["text"], vec))
+            meta = json.dumps(doc.get("metadata", {}))
+            values.append((doc["id"], doc.get("source", "unknown"), doc["text"], vec, meta))
         cur.executemany(insert_sql, values)
         conn.commit()
         print(f"   Stored {min(i + batch_size, len(docs))}/{len(docs)} chunks...")
@@ -190,10 +205,10 @@ def import_embeddings_to_db(input_file: str = "embeddings.json", batch_size: int
     return len(docs)
 
 
-def search_chunks(query: str, top_k: int = 3, min_score: float = 0.70) -> list[dict]:
+def search_chunks(query: str, top_k: int = 3, min_score: float = 0.70, filter_metadata: dict = None) -> list[dict]:
     """
     Search pgvector database using cosine similarity for the user query.
-    Default threshold is 0.70 (70%) to prevent false positives for casual chat.
+    Optionally filter by JSONB metadata (e.g. {"modality": "image", "has_text": True}).
     """
     init_database(1024)
     query_vector = get_embedding(query, is_query=True)
@@ -201,23 +216,33 @@ def search_chunks(query: str, top_k: int = 3, min_score: float = 0.70) -> list[d
     conn = get_db_connection()
     cur = conn.cursor()
 
-    sql = """
-        SELECT id, source, text, 1 - (embedding <=> %s::vector) AS score
+    params = [query_vector, query_vector, min_score]
+    meta_filter_clause = ""
+    if filter_metadata:
+        meta_filter_clause = " AND metadata @> %s::jsonb"
+        params.append(json.dumps(filter_metadata))
+
+    params.extend([query_vector, top_k])
+
+    sql = f"""
+        SELECT id, source, text, 1 - (embedding <=> %s::vector) AS score, COALESCE(metadata, '{{}}'::jsonb)::text
         FROM document_chunks
-        WHERE 1 - (embedding <=> %s::vector) >= %s
+        WHERE 1 - (embedding <=> %s::vector) >= %s{meta_filter_clause}
         ORDER BY embedding <=> %s::vector
         LIMIT %s;
     """
-    cur.execute(sql, (query_vector, query_vector, min_score, query_vector, top_k))
+    cur.execute(sql, tuple(params))
     rows = cur.fetchall()
 
     results = []
     for r in rows:
+        meta = json.loads(r[4]) if r[4] else {}
         results.append({
             "id": r[0],
             "source": r[1],
             "text": r[2],
             "score": float(r[3]),
+            "metadata": meta,
         })
 
     cur.close()

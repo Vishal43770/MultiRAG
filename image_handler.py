@@ -86,24 +86,27 @@ def encode_image_to_base64(image_path: str, max_size: int = 1536) -> tuple[str, 
 
 def analyze_image_with_vision(image_path: str) -> Dict[str, Any]:
     """
-    Use Vision AI to extract:
-    1. Category (Architecture Diagram, Flowchart, UI, Chart, Scan, etc.)
-    2. Detailed technical description
-    3. Complete OCR text & labels
-    4. Key technical entities
+    Use Vision AI to extract comprehensive visual & textual metadata:
+    - has_text: boolean indicating whether text is present in the image
+    - category: Diagram, Screenshot, Chart, Photo, Illustration, etc.
+    - scene_description: Detailed visual scene/component breakdown
+    - ocr_text: Verbatim extracted text and labels (or empty string if none)
+    - entities: Key technical/real-world entities and tags
     """
     filename = os.path.basename(image_path)
     print(f"👁️ Analyzing image '{filename}' with Vision AI ({VISION_MODEL})...")
 
     b64_data, mime_type, width, height = encode_image_to_base64(image_path)
+    file_size_kb = round(os.path.getsize(image_path) / 1024, 2) if os.path.exists(image_path) else 0
 
     prompt = (
-        "You are an expert technical document & diagram analyzer. "
-        "Analyze this image in detail and return a structured response with:\n\n"
-        "1. [CATEGORY]: (e.g. System Architecture Diagram, Flowchart, Data Table, UI Screenshot, Graph/Chart, Technical Document)\n"
-        "2. [DETAILED DESCRIPTION]: Thoroughly describe the contents, components, arrows, data flows, and layout.\n"
-        "3. [OCR TEXT & LABELS]: Transcribe every single visible piece of text, title, component label, number, and caption verbatim.\n"
-        "4. [KEY ENTITIES]: A comma-separated list of the 5-10 primary technical concepts or component names shown."
+        "You are an expert multimodal document and image analyzer. Analyze this image thoroughly.\n"
+        "Return your answer strictly using the following structured tags:\n\n"
+        "[HAS_TEXT]: (Yes or No)\n"
+        "[CATEGORY]: (e.g. Architecture Diagram, Flowchart, UI Screenshot, Graph/Chart, Photo/Real-world, Artwork/Illustration)\n"
+        "[VISUAL SCENE DESCRIPTION]: (Detailed description of visual contents, layout, objects, colors, flow, and purpose. If no text, describe objects, atmosphere, and scene thoroughly.)\n"
+        "[OCR TEXT]: (Verbatim text transcription of every title, label, code, number, or caption visible. If NO text exists, write 'NONE'.)\n"
+        "[KEY ENTITIES & TAGS]: (Comma-separated list of 5-12 keywords, concepts, or objects shown)"
     )
 
     response = groq_client.chat.completions.create(
@@ -121,24 +124,67 @@ def analyze_image_with_vision(image_path: str) -> Dict[str, Any]:
     content = response.choices[0].message.content or ""
     usage = response.usage
 
+    # Extract HAS_TEXT
+    has_text_match = re.search(r"\[HAS_TEXT\]:?\s*(.*?)(?=\n\[|\n\n|$)", content, re.IGNORECASE)
+    has_text_val = has_text_match.group(1).strip().lower() if has_text_match else ""
+    has_text = "yes" in has_text_val or "true" in has_text_val
+
     # Extract Category
     cat_match = re.search(r"\[CATEGORY\]:?\s*(.*?)(?=\n\[|\n\n|$)", content, re.IGNORECASE)
-    category = cat_match.group(1).strip() if cat_match else "Diagram / Image"
+    category = cat_match.group(1).strip() if cat_match else ("Diagram" if has_text else "Photo / Image")
 
-    # Extract Key Entities
-    ent_match = re.search(r"\[KEY ENTITIES\]:?\s*(.*?)(?=\n\[|\n\n|$)", content, re.IGNORECASE)
+    # Extract OCR Text
+    ocr_match = re.search(r"\[OCR TEXT\]:?\s*(.*?)(?=\n\[|\n\n|$)", content, re.IGNORECASE | re.DOTALL)
+    ocr_raw = ocr_match.group(1).strip() if ocr_match else ""
+    if ocr_raw.upper() in ["NONE", "N/A", "NO TEXT"]:
+        ocr_raw = ""
+        has_text = False
+
+    # Extract Visual Description
+    desc_match = re.search(r"\[VISUAL SCENE DESCRIPTION\]:?\s*(.*?)(?=\n\[|\n\n|$)", content, re.IGNORECASE | re.DOTALL)
+    scene_description = desc_match.group(1).strip() if desc_match else content
+
+    # Extract Key Entities & Tags
+    ent_match = re.search(r"\[KEY ENTITIES & TAGS\]:?\s*(.*?)(?=\n\[|\n\n|$)", content, re.IGNORECASE)
     entities = []
     if ent_match:
         entities = [e.strip() for e in ent_match.group(1).split(",") if e.strip()]
+
+    # Construct rich composite text representation for embedding
+    composite_text = f"Image: {filename}\nCategory: {category}\nScene Description: {scene_description}\n"
+    if has_text and ocr_raw:
+        composite_text += f"Visible Text / OCR: {ocr_raw}\n"
+    if entities:
+        composite_text += f"Tags: {', '.join(entities)}"
+
+    metadata = {
+        "modality": "image",
+        "has_text": has_text,
+        "category": category,
+        "source_file": filename,
+        "storage_path": os.path.abspath(image_path),
+        "dimensions": {
+            "width": width,
+            "height": height,
+            "file_size_kb": file_size_kb,
+        },
+        "ocr_detected": bool(has_text and ocr_raw),
+        "ocr_text_preview": ocr_raw[:300] if ocr_raw else "",
+        "tags": entities,
+    }
 
     return {
         "filename": filename,
         "image_path": os.path.abspath(image_path),
         "width": width,
         "height": height,
+        "has_text": has_text,
         "category": category,
-        "full_analysis": content,
+        "ocr_text": ocr_raw,
+        "scene_description": scene_description,
+        "full_analysis": composite_text,
         "entities": entities,
+        "metadata": metadata,
         "tokens": {
             "input": usage.prompt_tokens if usage else 0,
             "output": usage.completion_tokens if usage else 0,
@@ -148,19 +194,20 @@ def analyze_image_with_vision(image_path: str) -> Dict[str, Any]:
 
 
 # ======================================================================================
-# 2. Chunking (1500 chars / 250 overlap)
+# 2. Chunking (1500 chars / 250 overlap)  16 percentage overlap in chunk size
 # ======================================================================================
 
 def chunk_image_analysis(analysis: Dict[str, Any], chunk_size: int = 1500, overlap: int = 250) -> List[Dict[str, Any]]:
-    """Convert image description and OCR text into standard 1500/250 chunks."""
+    """Convert image description and OCR text into standard 1500/250 chunks with metadata."""
     filename = analysis["filename"]
     category = analysis["category"]
     full_text = analysis["full_analysis"]
+    base_metadata = analysis.get("metadata", {})
 
     chunks = []
-    header = f"[Image: {filename} | Category: {category} | Dimensions: {analysis['width']}x{analysis['height']}px]\n"
+    header = f"[Image: {filename} | Category: {category} | HasText: {analysis.get('has_text', False)} | Dimensions: {analysis['width']}x{analysis['height']}px]\n"
 
-    # If text fits inside 1500 chars, keep as 1 chunk
+    # If text fits inside chunk_size, keep as 1 chunk
     if len(header) + len(full_text) <= chunk_size:
         chunks.append({
             "id": f"{filename}_chunk_1",
@@ -170,6 +217,7 @@ def chunk_image_analysis(analysis: Dict[str, Any], chunk_size: int = 1500, overl
             "category": category,
             "text": header + full_text,
             "entities": analysis["entities"],
+            "metadata": {**base_metadata, "chunk_index": 1, "total_chunks": 1},
         })
         return chunks
 
@@ -189,11 +237,15 @@ def chunk_image_analysis(analysis: Dict[str, Any], chunk_size: int = 1500, overl
             "category": category,
             "text": f"{header}(Part {chunk_counter})\n{piece}",
             "entities": analysis["entities"],
+            "metadata": {**base_metadata, "chunk_index": chunk_counter},
         })
 
         if end_idx >= len(full_text):
             break
         current_idx = end_idx - overlap
+
+    for ch in chunks:
+        ch["metadata"]["total_chunks"] = len(chunks)
 
     return chunks
 
@@ -203,7 +255,7 @@ def chunk_image_analysis(analysis: Dict[str, Any], chunk_size: int = 1500, overl
 # ======================================================================================
 
 def ingest_image_chunks_to_postgres(chunks: List[Dict[str, Any]]) -> int:
-    """Store image chunks and 1024-dim embeddings into PostgreSQL pgvector."""
+    """Store image chunks, 1024-dim embeddings, and metadata into PostgreSQL pgvector."""
     if not EMBEDDING_AVAILABLE:
         print("⚠️ 'embedding.py' not available. Skipping pgvector ingestion.")
         return 0
@@ -213,21 +265,24 @@ def ingest_image_chunks_to_postgres(chunks: List[Dict[str, Any]]) -> int:
     cur = conn.cursor()
 
     insert_sql = """
-        INSERT INTO document_chunks (id, source, text, embedding)
-        VALUES (%s, %s, %s, %s::vector)
+        INSERT INTO document_chunks (id, source, text, embedding, metadata)
+        VALUES (%s, %s, %s, %s::vector, %s::jsonb)
         ON CONFLICT (id) DO UPDATE 
-        SET text = EXCLUDED.text, embedding = EXCLUDED.embedding;
+        SET text = EXCLUDED.text,
+            embedding = EXCLUDED.embedding,
+            metadata = EXCLUDED.metadata;
     """
 
     print(f"🚀 Indexing {len(chunks)} image chunk(s) into PostgreSQL pgvector...")
     for ch in chunks:
         vector = get_embedding(ch["text"], is_query=False)
-        cur.execute(insert_sql, (ch["id"], ch["source"], ch["text"], vector))
+        meta_json = json.dumps(ch.get("metadata", {}))
+        cur.execute(insert_sql, (ch["id"], ch["source"], ch["text"], vector, meta_json))
 
     conn.commit()
     cur.close()
     conn.close()
-    print("✅ Image successfully indexed in PostgreSQL!")
+    print("✅ Image successfully indexed in PostgreSQL with metadata!")
     return len(chunks)
 
 
@@ -254,9 +309,12 @@ def ingest_image_to_neo4j(analysis: Dict[str, Any], chunks: List[Dict[str, Any]]
                     img.path = $path,
                     img.width = $width,
                     img.height = $height,
-                    img.category = $category;
+                    img.category = $category,
+                    img.has_text = $has_text,
+                    img.ocr_preview = $ocr_preview;
             """, filename=analysis["filename"], path=analysis["image_path"],
-                width=analysis["width"], height=analysis["height"], category=analysis["category"])
+                width=analysis["width"], height=analysis["height"], category=analysis["category"],
+                has_text=analysis.get("has_text", False), ocr_preview=analysis.get("ocr_text", "")[:300])
 
             # 2. Chunk Nodes & Entities
             for ch in chunks:
