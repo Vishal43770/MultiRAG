@@ -1,6 +1,7 @@
 import os
 import sys
 import json
+import uuid
 from datetime import datetime
 from dotenv import load_dotenv
 from groq import Groq
@@ -12,6 +13,14 @@ from embedding import (
     init_database,
     get_db_connection,
 )
+from memory_db import (
+    init_memory_database,
+    list_conversations,
+    delete_conversation_hard,
+    list_user_memories,
+    clear_all_user_memories,
+)
+from memory_manager import MemoryManager, ContextManager
 
 # Load environment configuration from local .env
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
@@ -87,41 +96,12 @@ def save_and_display_query_embedding(query: str, vector: list[float], file_path:
     print(f"💾 Full embedding vector saved to: '{os.path.basename(full_path)}'\n")
 
 
-def generate_rag_answer(question: str, context: str) -> tuple[str, dict]:
-    """Answer technical questions using retrieved document context."""
-    system_prompt = (
-        "You are an expert technical assistant. "
-        "Answer the user's question accurately using ONLY the provided document context below. "
-        "Be clear, concise, and structured.\n\n"
-        f"Document Context:\n{context}"
-    )
-
+def generate_answer_with_memory(messages: list) -> tuple[str, dict]:
+    """Generate LLM answer using context-managed messages including short/summary/long-term memory."""
     response = groq_client.chat.completions.create(
         model=MODEL_NAME,
-        messages=[
-            {"role": "system", "content": system_prompt},
-            {"role": "user", "content": question},
-        ],
+        messages=messages,
         temperature=0.2,
-    )
-    return _parse_response(response)
-
-
-def generate_general_answer(question: str) -> tuple[str, dict]:
-    """Answer casual chat, greetings, or general knowledge without any document chunks."""
-    system_prompt = (
-        "You are a friendly, helpful AI assistant. "
-        "Answer the user's greeting or general question naturally and concisely. "
-        "Mention that you can also answer questions about their uploaded technical documents (PostgreSQL, NIST, etc.)."
-    )
-
-    response = groq_client.chat.completions.create(
-        model=MODEL_NAME,
-        messages=[
-            {"role": "system", "content": system_prompt},
-            {"role": "user", "content": question},
-        ],
-        temperature=0.7,
     )
     return _parse_response(response)
 
@@ -171,13 +151,14 @@ def print_token_breakdown(turn_tokens: dict, mode: str):
     print("└" + "─" * 58 + "┘")
 
 
-def run_chatbot():
-    """Terminal-based interactive RAG chat bot."""
+def run_chatbot(user_id: str = "default_user", conversation_id: str = None):
+    """Terminal-based interactive RAG chat bot with 3-Layer ChatGPT-like Memory."""
     print("=" * 65)
-    print("        🐾 TERMINAL RAG CHAT BOT (Groq + pgvector)        ")
+    print("   🐾 TERMINAL RAG CHAT BOT with 3-LAYER MEMORY (PostgreSQL)   ")
     print("=" * 65)
 
     init_database(1024)
+    init_memory_database(1024)
     chunks_count = get_total_chunks()
 
     local_embed_file = os.path.join(BASE_DIR, "embeddings.json")
@@ -189,14 +170,27 @@ def run_chatbot():
         else:
             print("⚠️ Warning: No document chunks in database and 'embeddings.json' not found.")
 
-    print(f"📊 Connected to PostgreSQL: {chunks_count:,} chunks available")
+    conv_id = conversation_id or str(uuid.uuid4())[:8]
+    memory_manager = MemoryManager(user_id=user_id, conversation_id=conv_id)
+
+    print(f"👤 User ID: {user_id}")
+    print(f"💬 Conversation ID: {conv_id}")
+    print(f"📊 Knowledge Base: {chunks_count:,} document chunks available")
     print(f"🤖 LLM Model: {MODEL_NAME}")
     print(f"🎯 Similarity Threshold: {SIMILARITY_THRESHOLD * 100:.0f}%")
-    print("💡 Commands: 'exit' or 'quit' to leave, '/export' to download data to JSON\n")
+    print("💡 Commands:")
+    print("   /new            -> Start a fresh new conversation")
+    print("   /list           -> List your past conversations")
+    print("   /load <id>      -> Reopen/switch to an existing conversation")
+    print("   /delete <id>    -> HARD DELETE a conversation (purges messages & summary)")
+    print("   /memories       -> View your learned long-term preferences")
+    print("   /clear-memories -> Purge all your long-term preferences")
+    print("   /export         -> Download vector chunks to embeddings.json")
+    print("   exit / quit     -> Leave chat\n")
 
     while True:
         try:
-            user_input = input("You > ").strip()
+            user_input = input(f"[{conv_id}] You > ").strip()
         except (KeyboardInterrupt, EOFError):
             print("\nGoodbye! 👋")
             break
@@ -204,53 +198,116 @@ def run_chatbot():
         if not user_input:
             continue
 
-        if user_input.lower() in ["exit", "quit", "q"]:
+        cmd = user_input.lower()
+        if cmd in ["exit", "quit", "q"]:
             print("Goodbye! 👋")
             break
 
-        if user_input.lower() == "/export":
+        if cmd == "/new":
+            conv_id = str(uuid.uuid4())[:8]
+            memory_manager = MemoryManager(user_id=user_id, conversation_id=conv_id)
+            print(f"✨ Started fresh conversation: {conv_id}\n")
+            continue
+
+        if cmd == "/list":
+            convs = list_conversations(user_id)
+            print("\n📋 Your Conversations:")
+            if not convs:
+                print("   (No conversations found)")
+            for c in convs:
+                marker = "👉 [ACTIVE]" if c["id"] == conv_id else "  "
+                print(f"   {marker} ID: {c['id']} | Messages: {c['message_count']} | Last active: {c['updated_at']}")
+            print()
+            continue
+
+        if cmd.startswith("/load "):
+            target_id = user_input.split(maxsplit=1)[1].strip()
+            conv_id = target_id
+            memory_manager = MemoryManager(user_id=user_id, conversation_id=conv_id)
+            print(f"📂 Loaded conversation: {conv_id}\n")
+            continue
+
+        if cmd.startswith("/delete "):
+            target_id = user_input.split(maxsplit=1)[1].strip()
+            success = delete_conversation_hard(target_id, user_id)
+            if success:
+                print(f"🗑️ Successfully hard-deleted conversation '{target_id}' and all its messages.")
+                if target_id == conv_id:
+                    conv_id = str(uuid.uuid4())[:8]
+                    memory_manager = MemoryManager(user_id=user_id, conversation_id=conv_id)
+                    print(f"✨ Switched to new active conversation: {conv_id}")
+            else:
+                print(f"❌ Could not find or delete conversation '{target_id}'.")
+            print()
+            continue
+
+        if cmd == "/memories":
+            mems = list_user_memories(user_id)
+            print(f"\n🧠 Long-Term Memories Stored for User '{user_id}':")
+            if not mems:
+                print("   (No long-term memories learned yet)")
+            for m in mems:
+                print(f"   • [{m['category']}] {m['memory_text']} (ID: {m['id']})")
+            print()
+            continue
+
+        if cmd == "/clear-memories":
+            count = clear_all_user_memories(user_id)
+            print(f"🧹 Cleared {count} long-term memories for user '{user_id}'.\n")
+            continue
+
+        if cmd == "/export":
             download_data_from_db("embeddings.json")
             continue
 
         # 1. Generate query embedding vector
         query_vector = get_embedding(user_input, is_query=True)
-
-        # 2. Print question embedding to terminal and save to JSON
         save_and_display_query_embedding(user_input, query_vector, file_path="query_embedding.json")
 
-        # 3. Check database for relevant document context
+        # 2. Check vector database for relevant document chunks
         print("🔍 Checking database for relevant document context...")
         matches = search_chunks(user_input, top_k=3, min_score=SIMILARITY_THRESHOLD)
 
+        rag_context = ""
+        mode_label = "General AI with Memory"
         if matches:
-            # Document RAG Mode (Found in PDF)
+            mode_label = "Document RAG with Memory"
             print("📑 Mode: Document RAG (Relevant PDF context found)")
             for idx, m in enumerate(matches, 1):
                 pct = m["score"] * 100
                 print(f"   [{idx}] {m['source']} (Match: {pct:.1f}%)")
-
-            context = "\n\n---\n\n".join([f"Source: {m['source']}\n{m['text']}" for m in matches])
-            print(f"\n🧠 Generating answer from document context...\n")
-            try:
-                answer, token_info = generate_rag_answer(user_input, context)
-                print("Bot > " + answer)
-                print_token_breakdown(token_info, mode="RAG Mode (PDF Context)")
-            except Exception as e:
-                print(f"❌ Error querying Groq: {e}")
-
+            rag_context = "\n\n---\n\n".join([f"Source: {m['source']}\n{m['text']}" for m in matches])
         else:
-            # General AI Mode (Not in PDF -> Direct to Groq, Zero Chunks, Minimal Tokens)
-            print("💡 Mode: General Assistant (No PDF chunks needed - saving tokens)")
-            print(f"🧠 Generating answer using general knowledge...\n")
-            try:
-                answer, token_info = generate_general_answer(user_input)
-                print("Bot > " + answer)
-                print_token_breakdown(token_info, mode="General AI Mode")
-            except Exception as e:
-                print(f"❌ Error querying Groq: {e}")
+            print("💡 Mode: General Assistant with Memory (No PDF chunks needed)")
+
+        # 3. Assemble prompt with ContextManager (System + Long-Term + Summary + RAG + Short-Term History)
+        sys_instructions = (
+            "You are an expert technical AI assistant with conversation memory. "
+            "Use the provided document context, user profile preferences, and conversation history to answer accurately. "
+            "Be structured, concise, and helpful."
+        )
+        full_messages = ContextManager.build_context(
+            memory_manager=memory_manager,
+            query=user_input,
+            rag_context=rag_context,
+            system_base=sys_instructions,
+        )
+
+        # 4. Generate answer from Groq
+        print(f"\n🧠 Generating answer with active memory context...\n")
+        try:
+            answer, token_info = generate_answer_with_memory(full_messages)
+            print("Bot > " + answer)
+            print_token_breakdown(token_info, mode=mode_label)
+
+            # 5. Persist turn into Short-Term Memory, check rolling summary & update long-term memory
+            memory_manager.record_turn(user_input, answer)
+        except Exception as e:
+            print(f"❌ Error querying Groq: {e}")
 
         print("\n" + "-" * 65 + "\n")
 
 
 if __name__ == "__main__":
-    run_chatbot()
+    cli_user = sys.argv[1] if len(sys.argv) > 1 and not sys.argv[1].startswith("-") else "default_user"
+    run_chatbot(user_id=cli_user)
