@@ -1,0 +1,106 @@
+{
+  "analysis": {
+    "filename": "image.png",
+    "image_path": "C:\\Users\\VISHAL\\my_files\\multy_rag\\uploads\\image.png",
+    "width": 251,
+    "height": 148,
+    "has_text": true,
+    "category": "Architecture Diagram",
+    "ocr_text": "RAG architecture\nClient\nResponse\nQuestion\nFramework\nPost Processing\nLLM\nPrompt\nSemantic Search\nContextual Data\nVector Database\nOriginal Content\nNew Content",
+    "scene_description": "The image displays a schematic diagram titled \"RAG architecture\" on a light gray background. It illustrates the flow of data in a Retrieval-Augmented Generation system. On the left, a \"Client\" icon (a simple line drawing of a person) sends a \"Question\" to a central \"Framework\" (represented by a gear-like network icon). The Framework interacts with a \"Vector Database\" (a 3D cube icon) via \"Semantic Search\" and retrieves \"Contextual Data\". This data, along with \"Original Content\" and \"New Content\" (represented by document icons), is sent as a \"Prompt\" to an \"LLM\" (Large Language Model), shown as a green circle. The LLM sends output to \"Post Processing\", which then returns a \"Response\" to the Client. The bottom half of the image contains a zoomed-in, cropped view of the same diagram's components.",
+    "full_analysis": "Image: image.png\nCategory: Architecture Diagram\nScene Description: The image displays a schematic diagram titled \"RAG architecture\" on a light gray background. It illustrates the flow of data in a Retrieval-Augmented Generation system. On the left, a \"Client\" icon (a simple line drawing of a person) sends a \"Question\" to a central \"Framework\" (represented by a gear-like network icon). The Framework interacts with a \"Vector Database\" (a 3D cube icon) via \"Semantic Search\" and retrieves \"Contextual Data\". This data, along with \"Original Content\" and \"New Content\" (represented by document icons), is sent as a \"Prompt\" to an \"LLM\" (Large Language Model), shown as a green circle. The LLM sends output to \"Post Processing\", which then returns a \"Response\" to the Client. The bottom half of the image contains a zoomed-in, cropped view of the same diagram's components.\nVisible Text / OCR: RAG architecture\nClient\nResponse\nQuestion\nFramework\nPost Processing\nLLM\nPrompt\nSemantic Search\nContextual Data\nVector Database\nOriginal Content\nNew Content\nTags: RAG, Architecture, LLM, Vector Database, Semantic Search, Prompt, Framework, Client, Data Flow, AI System",
+    "entities": [
+      "RAG",
+      "Architecture",
+      "LLM",
+      "Vector Database",
+      "Semantic Search",
+      "Prompt",
+      "Framework",
+      "Client",
+      "Data Flow",
+      "AI System"
+    ],
+    "metadata": {
+      "modality": "image",
+      "has_text": true,
+      "category": "Architecture Diagram",
+      "source_file": "image.png",
+      "storage_path": "C:\\Users\\VISHAL\\my_files\\multy_rag\\uploads\\image.png",
+      "dimensions": {
+        "width": 251,
+        "height": 148,
+        "file_size_kb": 33.26
+      },
+      "ocr_detected": true,
+      "ocr_text_preview": "RAG architecture\nClient\nResponse\nQuestion\nFramework\nPost Processing\nLLM\nPrompt\nSemantic Search\nContextual Data\nVector Database\nOriginal Content\nNew Content",
+      "tags": [
+        "RAG",
+        "Architecture",
+        "LLM",
+        "Vector Database",
+        "Semantic Search",
+        "Prompt",
+        "Framework",
+        "Client",
+        "Data Flow",
+        "AI System"
+      ]
+    },
+    "tokens": {
+      "input": 1979,
+      "output": 280,
+      "total": 2259
+    }
+  },
+  "chunks": [
+    {
+      "id": "image.png_chunk_1",
+      "source": "image.png",
+      "type": "image",
+      "image_path": "C:\\Users\\VISHAL\\my_files\\multy_rag\\uploads\\image.png",
+      "category": "Architecture Diagram",
+      "text": "[Image: image.png | Category: Architecture Diagram | HasText: True | Dimensions: 251x148px]\nImage: image.png\nCategory: Architecture Diagram\nScene Description: The image displays a schematic diagram titled \"RAG architecture\" on a light gray background. It illustrates the flow of data in a Retrieval-Augmented Generation system. On the left, a \"Client\" icon (a simple line drawing of a person) sends a \"Question\" to a central \"Framework\" (represented by a gear-like network icon). The Framework interacts with a \"Vector Database\" (a 3D cube icon) via \"Semantic Search\" and retrieves \"Contextual Data\". This data, along with \"Original Content\" and \"New Content\" (represented by document icons), is sent as a \"Prompt\" to an \"LLM\" (Large Language Model), shown as a green circle. The LLM sends output to \"Post Processing\", which then returns a \"Response\" to the Client. The bottom half of the image contains a zoomed-in, cropped view of the same diagram's components.\nVisible Text / OCR: RAG architecture\nClient\nResponse\nQuestion\nFramework\nPost Processing\nLLM\nPrompt\nSemantic Search\nContextual Data\nVector Database\nOriginal Content\nNew Content\nTags: RAG, Architecture, LLM, Vector Database, Semantic Search, Prompt, Framework, Client, Data Flow, AI System",
+      "entities": [
+        "RAG",
+        "Architecture",
+        "LLM",
+        "Vector Database",
+        "Semantic Search",
+        "Prompt",
+        "Framework",
+        "Client",
+        "Data Flow",
+        "AI System"
+      ],
+      "metadata": {
+        "modality": "image",
+        "has_text": true,
+        "category": "Architecture Diagram",
+        "source_file": "image.png",
+        "storage_path": "C:\\Users\\VISHAL\\my_files\\multy_rag\\uploads\\image.png",
+        "dimensions": {
+          "width": 251,
+          "height": 148,
+          "file_size_kb": 33.26
+        },
+        "ocr_detected": true,
+        "ocr_text_preview": "RAG architecture\nClient\nResponse\nQuestion\nFramework\nPost Processing\nLLM\nPrompt\nSemantic Search\nContextual Data\nVector Database\nOriginal Content\nNew Content",
+        "tags": [
+          "RAG",
+          "Architecture",
+          "LLM",
+          "Vector Database",
+          "Semantic Search",
+          "Prompt",
+          "Framework",
+          "Client",
+          "Data Flow",
+          "AI System"
+        ],
+        "chunk_index": 1,
+        "total_chunks": 1
+      }
+    }
+  ]
+}

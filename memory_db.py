@@ -99,17 +99,17 @@ def init_memory_database(dimensions: int = 1024):
 # ======================================================================================
 
 def create_conversation(conversation_id: str, user_id: str, title: str = "New Conversation") -> Dict[str, Any]:
-    """Create or ensure a conversation exists for a user."""
+    """Create or ensure a conversation exists for a user without bumping updated_at on read."""
     conn = get_memory_db_connection()
     cur = conn.cursor(cursor_factory=RealDictCursor)
     cur.execute("""
         INSERT INTO conversations (id, user_id, title)
         VALUES (%s, %s, %s)
-        ON CONFLICT (id) DO UPDATE SET updated_at = CURRENT_TIMESTAMP
-        RETURNING *;
+        ON CONFLICT (id) DO NOTHING;
     """, (conversation_id, user_id, title))
-    row = cur.fetchone()
     conn.commit()
+    cur.execute("SELECT * FROM conversations WHERE id = %s;", (conversation_id,))
+    row = cur.fetchone()
     cur.close()
     conn.close()
     return dict(row)

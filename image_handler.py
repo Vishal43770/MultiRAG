@@ -35,8 +35,11 @@ from groq import Groq
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 load_dotenv(os.path.join(BASE_DIR, ".env"))
 
+MEDIA_DIR = os.path.join(BASE_DIR, "extracted_media")
+os.makedirs(MEDIA_DIR, exist_ok=True)
+
 GROQ_API_KEY = os.getenv("GROQ_API_KEY")
-VISION_MODEL = os.getenv("GROQ_VISION_MODEL", "qwen/qwen3.8-27b")
+VISION_MODEL = os.getenv("GROQ_VISION_MODEL", "llama-3.2-90b-vision-preview")
 
 if not GROQ_API_KEY:
     raise ValueError("GROQ_API_KEY is not set in .env")

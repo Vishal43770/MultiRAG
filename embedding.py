@@ -205,10 +205,16 @@ def import_embeddings_to_db(input_file: str = "embeddings.json", batch_size: int
     return len(docs)
 
 
-def search_chunks(query: str, top_k: int = 3, min_score: float = 0.70, filter_metadata: dict = None) -> list[dict]:
+def search_chunks(
+    query: str,
+    top_k: int = 3,
+    min_score: float = 0.70,
+    filter_metadata: dict = None,
+    source_filter: list[str] = None,
+) -> list[dict]:
     """
     Search pgvector database using cosine similarity for the user query.
-    Optionally filter by JSONB metadata (e.g. {"modality": "image", "has_text": True}).
+    Optionally filter by JSONB metadata or restrict to specific source filenames.
     """
     init_database(1024)
     query_vector = get_embedding(query, is_query=True)
@@ -217,17 +223,20 @@ def search_chunks(query: str, top_k: int = 3, min_score: float = 0.70, filter_me
     cur = conn.cursor()
 
     params = [query_vector, query_vector, min_score]
-    meta_filter_clause = ""
+    extra_clauses = ""
     if filter_metadata:
-        meta_filter_clause = " AND metadata @> %s::jsonb"
+        extra_clauses += " AND metadata @> %s::jsonb"
         params.append(json.dumps(filter_metadata))
+    if source_filter:
+        extra_clauses += " AND source = ANY(%s)"
+        params.append(source_filter)
 
     params.extend([query_vector, top_k])
 
     sql = f"""
         SELECT id, source, text, 1 - (embedding <=> %s::vector) AS score, COALESCE(metadata, '{{}}'::jsonb)::text
         FROM document_chunks
-        WHERE 1 - (embedding <=> %s::vector) >= %s{meta_filter_clause}
+        WHERE 1 - (embedding <=> %s::vector) >= %s{extra_clauses}
         ORDER BY embedding <=> %s::vector
         LIMIT %s;
     """

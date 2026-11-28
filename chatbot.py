@@ -21,13 +21,15 @@ from memory_db import (
     clear_all_user_memories,
 )
 from memory_manager import MemoryManager, ContextManager
+from guardrails import validate_query_safety, sanitize_input
+from model_router import route_query_model, FAST_MODEL, HEAVY_MODEL
 
 # Load environment configuration from local .env
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 load_dotenv(os.path.join(BASE_DIR, ".env"))
 
 GROQ_API_KEY = os.getenv("GROQ_API_KEY")
-MODEL_NAME = os.getenv("GROQ_MODEL", "openai/gpt-oss-20b")
+MODEL_NAME = os.getenv("GROQ_MODEL", "llama-3.3-70b-versatile")
 SIMILARITY_THRESHOLD = float(os.getenv("SIMILARITY_THRESHOLD", "0.70"))
 
 if not GROQ_API_KEY:
@@ -96,10 +98,11 @@ def save_and_display_query_embedding(query: str, vector: list[float], file_path:
     print(f"💾 Full embedding vector saved to: '{os.path.basename(full_path)}'\n")
 
 
-def generate_answer_with_memory(messages: list) -> tuple[str, dict]:
+def generate_answer_with_memory(messages: list, model_name: str = None) -> tuple[str, dict]:
     """Generate LLM answer using context-managed messages including short/summary/long-term memory."""
+    target_model = model_name or MODEL_NAME
     response = groq_client.chat.completions.create(
-        model=MODEL_NAME,
+        model=target_model,
         messages=messages,
         temperature=0.2,
     )
@@ -260,6 +263,12 @@ def run_chatbot(user_id: str = "default_user", conversation_id: str = None):
             download_data_from_db("embeddings.json")
             continue
 
+        # 0. Safety Guardrail Validation
+        is_safe, safety_msg = validate_query_safety(user_input)
+        if not is_safe:
+            print(f"\n{safety_msg}\n")
+            continue
+
         # 1. Generate query embedding vector
         query_vector = get_embedding(user_input, is_query=True)
         save_and_display_query_embedding(user_input, query_vector, file_path="query_embedding.json")
@@ -272,7 +281,7 @@ def run_chatbot(user_id: str = "default_user", conversation_id: str = None):
         mode_label = "General AI with Memory"
         if matches:
             mode_label = "Document RAG with Memory"
-            print("📑 Mode: Document RAG (Relevant PDF context found)")
+            print("📑 Mode: Document RAG (Relevant context found)")
             for idx, m in enumerate(matches, 1):
                 pct = m["score"] * 100
                 print(f"   [{idx}] {m['source']} (Match: {pct:.1f}%)")
@@ -293,12 +302,18 @@ def run_chatbot(user_id: str = "default_user", conversation_id: str = None):
             system_base=sys_instructions,
         )
 
-        # 4. Generate answer from Groq
+        # 4. Route model & Generate answer from Groq
+        selected_model, route_reason = route_query_model(
+            matches=matches,
+            has_images=False,
+            query_length=len(user_input.split()),
+        )
+        print(f"🤖 Model Router: Selected '{selected_model}' ({route_reason})")
         print(f"\n🧠 Generating answer with active memory context...\n")
         try:
-            answer, token_info = generate_answer_with_memory(full_messages)
+            answer, token_info = generate_answer_with_memory(full_messages, model_name=selected_model)
             print("Bot > " + answer)
-            print_token_breakdown(token_info, mode=mode_label)
+            print_token_breakdown(token_info, mode=f"{mode_label} [{selected_model}]")
 
             # 5. Persist turn into Short-Term Memory, check rolling summary & update long-term memory
             memory_manager.record_turn(user_input, answer)

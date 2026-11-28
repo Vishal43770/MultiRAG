@@ -1,0 +1,236 @@
+====================================================================================================
+     FULL RETRIEVED DATA INSPECTION: BEFORE COMPRESSION vs AFTER COMPRESSION
+ File: compression_data_detail.txt | Active LLM: qwen/qwen3.8-27b
+====================================================================================================
+
+This document contains the 100% complete, unedited text of all retrieved chunks,
+showing exactly what was retrieved, what was kept, what was removed, and the resulting answers.
+
+####################################################################################################
+ QUERY #1: What is the concept of Least Privilege in control AC-6?
+####################################################################################################
+
+====================================================================================================
+ 📂 RETRIEVED CHUNKS BREAKDOWN (3 Chunks Retrieved)
+====================================================================================================
+
+--- [CHUNK 1 of 3] Source: NIST.SP.800-53r5.pdf ---
+
+>>> [A] FULL RAW DATA (BEFORE COMPRESSION - EXACT UNTOUCHED TEXT):
+----------------------------------------------------------------------
+Organizations apply least privilege to the development, implementation, and operation of organizational systems. Related Controls: AC-2 , AC-3 , AC-5 , AC-16 , CM-5 , CM-11 , PL-2 , PM-12 , SA-8 , SA-15 , SA-17 , SC-38. Control Enhancements: (1) LEAST PRIVILEGE | AUTHORIZE ACCESS TO SECURITY FUNCTIONS Authorize access for [ Assignment: organization-defined individuals or roles ] to: (a) [ Assignment: organization-defined security functions (deployed in hardware, software, and firmware) ]; and (b) [ Assignment: organization-defined security-relevant information ].
+
+>>> [B] EXTRACTED DATA (AFTER COMPRESSION - KEY SENTENCES ONLY):
+----------------------------------------------------------------------
+Organizations apply least privilege to the development, implementation, and operation of organizational systems. Related Controls: AC-2 , AC-3 , AC-5 , AC-16 , CM-5 , CM-11 , PL-2 , PM-12 , SA-8 , SA-15 , SA-17 , SC-38. Control Enhancements: (1) LEAST PRIVILEGE | AUTHORIZE ACCESS TO SECURITY FUNCTIONS Authorize access for [ Assignment: organization-defined individuals or roles ] to: (a) [ Assignment: organization-defined security functions (deployed in hardware, software, and firmware) ]; and (b) [ Assignment: organization-defined security-relevant information ].
+
+>>> [C] DISCARDED FILLER TEXT (WHAT WAS SAFELY REMOVED):
+----------------------------------------------------------------------
+  (Chunk was already short; no sentences were removed)
+
+----------------------------------------------------------------------------------------------------
+
+--- [CHUNK 2 of 3] Source: NIST.SP.800-53r5.pdf ---
+
+>>> [A] FULL RAW DATA (BEFORE COMPRESSION - EXACT UNTOUCHED TEXT):
+----------------------------------------------------------------------
+Because separation of duty violations can span systems and application domains, organizations consider the entirety of systems and system components when developing policy on separation of duties. Separation of duties is enforced through the account management activities in AC-2 , access control mechanisms in AC-3 , and identity management activities in IA-2 , IA-4 , and IA-12. Related Controls: AC-2 , AC-3 , AC-6 , AU-9 , CM-5 , CM-11 , CP-9 , IA-2 , IA-4 , IA-5 , IA-12 , MA-3 , MA-5 , PS-2 , SA-8 , SA-17. Control Enhancements: None. References: None. AC-6 LEAST PRIVILEGE Control: Employ the principle of least privilege, allowing only authorized accesses for users (or processes acting on behalf of users) that are necessary to accomplish assigned organizational tasks. Discussion: Organizations employ least privilege for specific duties and systems. The principle of least privilege is also applied to system processes, ensuring that the processes have access to systems and operate at privilege levels no higher than necessary to accomplish organizational missions or business functions. Organizations consider the creation of additional processes, roles, and accounts as necessary to achieve least privilege. Organizations apply least privilege to the development, implementation, and operation of organizational systems. Related Controls: AC-2 , AC-3 , AC-5 , AC-16 , CM-5 , CM-11 , PL-2 , PM-12 , SA-8 , SA-15 , SA-17 , SC-38
+
+>>> [B] EXTRACTED DATA (AFTER COMPRESSION - KEY SENTENCES ONLY):
+----------------------------------------------------------------------
+Related Controls: AC-2 , AC-3 , AC-6 , AU-9 , CM-5 , CM-11 , CP-9 , IA-2 , IA-4 , IA-5 , IA-12 , MA-3 , MA-5 , PS-2 , SA-8 , SA-17. ... AC-6 LEAST PRIVILEGE Control: Employ the principle of least privilege, allowing only authorized accesses for users (or processes acting on behalf of users) that are necessary to accomplish assigned organizational tasks. ... Discussion: Organizations employ least privilege for specific duties and systems.
+
+>>> [C] DISCARDED FILLER TEXT (WHAT WAS SAFELY REMOVED):
+----------------------------------------------------------------------
+  ❌ REMOVED: Because separation of duty violations can span systems and application domains, organizations consider the entirety of systems and system components when developing policy on separation of duties.
+  ❌ REMOVED: Separation of duties is enforced through the account management activities in AC-2 , access control mechanisms in AC-3 , and identity management activities in IA-2 , IA-4 , and IA-12.
+  ❌ REMOVED: Control Enhancements: None.
+  ❌ REMOVED: References: None.
+  ❌ REMOVED: The principle of least privilege is also applied to system processes, ensuring that the processes have access to systems and operate at privilege levels no higher than necessary to accomplish organizational missions or business functions.
+  ❌ REMOVED: Organizations consider the creation of additional processes, roles, and accounts as necessary to achieve least privilege.
+  ❌ REMOVED: Organizations apply least privilege to the development, implementation, and operation of organizational systems.
+  ❌ REMOVED: Related Controls: AC-2 , AC-3 , AC-5 , AC-16 , CM-5 , CM-11 , PL-2 , PM-12 , SA-8 , SA-15 , SA-17 , SC-38
+
+----------------------------------------------------------------------------------------------------
+
+--- [CHUNK 3 of 3] Source: NIST.SP.800-53r5.pdf ---
+
+>>> [A] FULL RAW DATA (BEFORE COMPRESSION - EXACT UNTOUCHED TEXT):
+----------------------------------------------------------------------
+In general, fewer trusted components result in fewer internal trust relationships and a simpler system. Related Controls: None. (14) SECURITY AND PRIVACY ENGINEERING PRINCIPLES | LEAST PRIVILEGE Implement the security design principle of least privilege in [ Assignment: organization- defined systems or system components ]. Discussion: The principle of least privilege states that each system component is allocated sufficient privileges to accomplish its specified functions but no more. Applying the principle of least privilege limits the scope of the component’s actions, which has two desirable effects: the security impact of a failure, corruption, or misuse of the component will have a minimized security impact, and the security analysis of the component will be simplified. Least privilege is a pervasive principle that is reflected in all aspects of the secure system design. Interfaces used to invoke component capability are available to only certain subsets of the user population, and component design supports a sufficiently fine granularity of privilege decomposition. For example, in the case of an audit mechanism, there may be an interface for the audit manager, who configures the audit settings; an interface for the audit operator, who ensures that audit data is safely collected and stored; and, finally, yet another interface for the audit reviewer, who only has need to view the audit data that has been collected but no need to perform operations on that data
+
+>>> [B] EXTRACTED DATA (AFTER COMPRESSION - KEY SENTENCES ONLY):
+----------------------------------------------------------------------
+(14) SECURITY AND PRIVACY ENGINEERING PRINCIPLES | LEAST PRIVILEGE Implement the security design principle of least privilege in [ Assignment: organization- defined systems or system components ]. ... Discussion: The principle of least privilege states that each system component is allocated sufficient privileges to accomplish its specified functions but no more. ... Least privilege is a pervasive principle that is reflected in all aspects of the secure system design.
+
+>>> [C] DISCARDED FILLER TEXT (WHAT WAS SAFELY REMOVED):
+----------------------------------------------------------------------
+  ❌ REMOVED: In general, fewer trusted components result in fewer internal trust relationships and a simpler system.
+  ❌ REMOVED: Related Controls: None.
+  ❌ REMOVED: Applying the principle of least privilege limits the scope of the component’s actions, which has two desirable effects: the security impact of a failure, corruption, or misuse of the component will have a minimized security impact, and the security analysis of the component will be simplified.
+  ❌ REMOVED: Interfaces used to invoke component capability are available to only certain subsets of the user population, and component design supports a sufficiently fine granularity of privilege decomposition.
+  ❌ REMOVED: For example, in the case of an audit mechanism, there may be an interface for the audit manager, who configures the audit settings; an interface for the audit operator, who ensures that audit data is safely collected and stored; and, finally, yet another interface for the audit reviewer, who only has need to view the audit data that has been collected but no need to perform operations on that data
+
+----------------------------------------------------------------------------------------------------
+
+====================================================================================================
+ 🤖 FULL GENERATED LLM ANSWERS (SIDE-BY-SIDE QUALITY COMPARISON)
+====================================================================================================
+
+--- [ANSWER A: USING FULL RAW UNCOMPRESSED CHUNKS] ---
+Based on the provided context from NIST SP 800-53r5, the concept of **Least Privilege** in control **AC-6** is defined as follows:
+
+**Core Definition**
+Organizations must employ the principle of least privilege, which allows **only authorized accesses** for users (or processes acting on behalf of users) that are **necessary to accomplish assigned organizational tasks**.
+
+**Key Aspects of Implementation**
+*   **Scope:** The principle applies to specific duties, systems, and system processes.
+*   **Process Privileges:** System processes must have access to systems and operate at privilege levels **no higher than necessary** to accomplish organizational missions or business functions.
+*   **Lifecycle Application:** Least privilege is applied throughout the **development, implementation, and operation** of organizational systems.
+*   **Resource Creation:** Organizations may create additional processes, roles, and accounts as necessary to achieve this principle.
+
+**Security Design Principles (Related Context)**
+While AC-6 focuses on user/process access, the broader security engineering principle of least privilege (referenced in the context) states that each system component is allocated **sufficient privileges to accomplish its specified functions but no more**. This approach:
+1.  Minimizes the security impact of a component’s failure, corruption, or misuse.
+2.  Simplifies the security analysis of the component.
+3.  Supports fine-grained privilege decomposition (e.g., separating roles for audit managers, operators, and reviewers).
+
+**Related Controls**
+AC-6 is related to: AC-2, AC-3, AC-5, AC-16, CM-5, CM-11, PL-2, PM-12, SA-8, SA-15, SA-17, and SC-38.
+
+--- [ANSWER B: USING FILTERED COMPRESSED CHUNKS] ---
+Based on the provided context from NIST SP 800-53r5, the concept of **Least Privilege** in control **AC-6** is defined as follows:
+
+*   **Core Definition:** Organizations must employ the principle of least privilege, which allows **only authorized accesses** for users (or processes acting on behalf of users) that are **necessary to accomplish assigned organizational tasks**.
+*   **Scope:** This principle is applied to specific duties and systems.
+*   **Design Principle:** It is a pervasive security design principle where each system component is allocated **sufficient privileges to accomplish its specified functions but no more**.
+
+In essence, AC-6 ensures that users and processes have the minimum level of access required to perform their job functions, preventing unnecessary access to system resources or security functions.
+
+🔍 QUALITY OBSERVATION:
+Notice that Answer B captures all the critical technical details, control numbers, and requirements,
+while omitting the irrelevant legal boilerplate and surrounding noise from the prompt.
+
+
+####################################################################################################
+ QUERY #2: Explain what boundary protection control SC-7 entails for network defense.
+####################################################################################################
+
+====================================================================================================
+ 📂 RETRIEVED CHUNKS BREAKDOWN (3 Chunks Retrieved)
+====================================================================================================
+
+--- [CHUNK 1 of 3] Source: NIST.SP.800-53r5.pdf ---
+
+>>> [A] FULL RAW DATA (BEFORE COMPRESSION - EXACT UNTOUCHED TEXT):
+----------------------------------------------------------------------
+NIST SP 800-53, R EV. 5 S ECURITY AND P RIVACY C ONTROLS FOR I NFORMATION S YSTEMS AND O RGANIZATIONS _________________________________________________________________________________________________ APPENDIX C PAGE 458 This publication is available free of charge from: https://doi.org/10.6028/NIST.SP.800 - 53r5 TABLE C-18: SYSTEM AND COMMUNICATIONS PROTECTION FAMILY CONTROL NUMBER CONTROL NAME CONTROL ENHANCEMENT NAME IMPLEMENTED BY ASSURANCE SC-1 Policy and Procedures O √ SC - 2 Separation of System and User Functionality S √ SC-2(1) INTERFACES FOR NON - PRIVILEGED USERS S √ SC-2(2) DISASSOCIABILITY S √ SC - 3 Security Function Isolation S √ SC-3(1) HARDWARE SEPARATION S √ SC-3(2) ACCESS AND FLOW CONTROL FUNCTIONS S √ SC-3(3) MINIMIZE NONSECURITY FUNCTIONALITY O / S √ SC-3(4) MODULE COUPLING AND COHESIVENESS O / S √ SC-3(5) LAYERED STRUCTURES O / S √ SC - 4 Information in Shared System Resources S SC-4(1) SECURITY LEVELS W: Incorporated into SC-4. SC-4(2) MULTILEVEL OR PERIODS PROCESSING S SC - 5 Denial - of - Service Protection S SC-5(1) RESTRICT ABILITY TO ATTACK OTHER SYSTEMS S SC-5(2) CAPACITY , BANDWIDTH , AND REDUNDANCY S SC-5(3) DETECTION AND MONITORING S SC - 6 Resource Availability S √ SC - 7 Boundary Protection S SC-7(1) PHYSICALLY SEPARATED SUBNETWORKS W: Incorporated into SC-7. SC-7(2) PUBLIC ACCESS W: Incorporated into SC-7
+
+>>> [B] EXTRACTED DATA (AFTER COMPRESSION - KEY SENTENCES ONLY):
+----------------------------------------------------------------------
+5 S ECURITY AND P RIVACY C ONTROLS FOR I NFORMATION S YSTEMS AND O RGANIZATIONS _________________________________________________________________________________________________ APPENDIX C PAGE 458 This publication is available free of charge from: https://doi.org/10.6028/NIST.SP.800 - 53r5 TABLE C-18: SYSTEM AND COMMUNICATIONS PROTECTION FAMILY CONTROL NUMBER CONTROL NAME CONTROL ENHANCEMENT NAME IMPLEMENTED BY ASSURANCE SC-1 Policy and Procedures O √ SC - 2 Separation of System and User Functionality S √ SC-2(1) INTERFACES FOR NON - PRIVILEGED USERS S √ SC-2(2) DISASSOCIABILITY S √ SC - 3 Security Function Isolation S √ SC-3(1) HARDWARE SEPARATION S √ SC-3(2) ACCESS AND FLOW CONTROL FUNCTIONS S √ SC-3(3) MINIMIZE NONSECURITY FUNCTIONALITY O / S √ SC-3(4) MODULE COUPLING AND COHESIVENESS O / S √ SC-3(5) LAYERED STRUCTURES O / S √ SC - 4 Information in Shared System Resources S SC-4(1) SECURITY LEVELS W: Incorporated into SC-4. ... SC-4(2) MULTILEVEL OR PERIODS PROCESSING S SC - 5 Denial - of - Service Protection S SC-5(1) RESTRICT ABILITY TO ATTACK OTHER SYSTEMS S SC-5(2) CAPACITY , BANDWIDTH , AND REDUNDANCY S SC-5(3) DETECTION AND MONITORING S SC - 6 Resource Availability S √ SC - 7 Boundary Protection S SC-7(1) PHYSICALLY SEPARATED SUBNETWORKS W: Incorporated into SC-7. ... SC-7(2) PUBLIC ACCESS W: Incorporated into SC-7.
+
+>>> [C] DISCARDED FILLER TEXT (WHAT WAS SAFELY REMOVED):
+----------------------------------------------------------------------
+  ❌ REMOVED: NIST SP 800-53, R EV.
+  ❌ REMOVED: SC-7(2) PUBLIC ACCESS W: Incorporated into SC-7
+
+----------------------------------------------------------------------------------------------------
+
+--- [CHUNK 2 of 3] Source: NIST.SP.800-53r5.pdf ---
+
+>>> [A] FULL RAW DATA (BEFORE COMPRESSION - EXACT UNTOUCHED TEXT):
+----------------------------------------------------------------------
+Discussion: Priority protection prevents lower-priority processes from delaying or interfering with the system that services higher-priority processes. Quotas prevent users or processes from obtaining more than predetermined amounts of resources. Related Controls: SC-5. Control Enhancements: None. References: [ OMB M-08-05 ], [ DHS TIC ]. SC-7 BOUNDARY PROTECTION Control: a. Monitor and control communications at the external managed interfaces to the system and at key internal managed interfaces within the system; b. Implement subnetworks for publicly accessible system components that are [ Selection: physically; logically ] separated from internal organizational networks; and c. Connect to external networks or systems only through managed interfaces consisting of boundary protection devices arranged in accordance with an organizational security and privacy architecture. Discussion: Managed interfaces include gateways, routers, firewalls, guards, network-based malicious code analysis, virtualization systems, or encrypted tunnels implemented within a security architecture. Subnetworks that are physically or logically separated from internal networks are referred to as demilitarized zones or DMZs
+
+>>> [B] EXTRACTED DATA (AFTER COMPRESSION - KEY SENTENCES ONLY):
+----------------------------------------------------------------------
+Discussion: Priority protection prevents lower-priority processes from delaying or interfering with the system that services higher-priority processes. ... Control Enhancements: None. ... SC-7 BOUNDARY PROTECTION Control: a.
+
+>>> [C] DISCARDED FILLER TEXT (WHAT WAS SAFELY REMOVED):
+----------------------------------------------------------------------
+  ❌ REMOVED: Quotas prevent users or processes from obtaining more than predetermined amounts of resources.
+  ❌ REMOVED: Related Controls: SC-5.
+  ❌ REMOVED: References: [ OMB M-08-05 ], [ DHS TIC ].
+  ❌ REMOVED: Monitor and control communications at the external managed interfaces to the system and at key internal managed interfaces within the system; b.
+  ❌ REMOVED: Implement subnetworks for publicly accessible system components that are [ Selection: physically; logically ] separated from internal organizational networks; and c.
+  ❌ REMOVED: Connect to external networks or systems only through managed interfaces consisting of boundary protection devices arranged in accordance with an organizational security and privacy architecture.
+  ❌ REMOVED: Discussion: Managed interfaces include gateways, routers, firewalls, guards, network-based malicious code analysis, virtualization systems, or encrypted tunnels implemented within a security architecture.
+  ❌ REMOVED: Subnetworks that are physically or logically separated from internal networks are referred to as demilitarized zones or DMZs
+
+----------------------------------------------------------------------------------------------------
+
+--- [CHUNK 3 of 3] Source: NIST.SP.800-53r5.pdf ---
+
+>>> [A] FULL RAW DATA (BEFORE COMPRESSION - EXACT UNTOUCHED TEXT):
+----------------------------------------------------------------------
+NIST SP 800-53, R EV. 5 S ECURITY AND P RIVACY C ONTROLS FOR I NFORMATION S YSTEMS AND O RGANIZATIONS _________________________________________________________________________________________________ CHAPTER THREE PAGE 298 This publication is available free of charge from: https://doi.org/10.6028/NIST.SP.800 - 53r5 Related Controls: AC-4 , AC-17 , AC-18 , AC-19 , AC-20 , AU-13 , CA-3 , CM-2 , CM-4 , CM-7 , CM-10 , CP- 8 , CP-10 , IR-4 , MA-4 , PE-3 , PL-8 , PM-12 , SA-8 , SA-17 , SC-5 , SC-26 , SC-32 , SC-35 , SC-43. Control Enhancements: (1) BOUNDARY PROTECTION | PHYSICALLY SEPARATED SUBNETWORKS [Withdrawn: Incorporated into SC-7 .] (2) BOUNDARY PROTECTION | PUBLIC ACCESS [Withdrawn: Incorporated into SC-7 .] (3) BOUNDARY PROTECTION | ACCESS POINTS Limit the number of external network connections to the system. Discussion: Limiting the number of external network connections facilitates monitoring of inbound and outbound communications traffic. The Trusted Internet Connection [ DHS TIC ] initiative is an example of a federal guideline that requires limits on the number of external network connections. Limiting the number of external network connections to the system is important during transition periods from older to newer technologies (e.g., transitioning from IPv4 to IPv6 network protocols). Such transitions may require implementing the older and newer technologies simultaneously during the transition period and thus increase the number of access points to the system
+
+>>> [B] EXTRACTED DATA (AFTER COMPRESSION - KEY SENTENCES ONLY):
+----------------------------------------------------------------------
+NIST SP 800-53, R EV. ... Control Enhancements: (1) BOUNDARY PROTECTION | PHYSICALLY SEPARATED SUBNETWORKS [Withdrawn: Incorporated into SC-7 .] (2) BOUNDARY PROTECTION | PUBLIC ACCESS [Withdrawn: Incorporated into SC-7 .] (3) BOUNDARY PROTECTION | ACCESS POINTS Limit the number of external network connections to the system. ... Limiting the number of external network connections to the system is important during transition periods from older to newer technologies (e.g., transitioning from IPv4 to IPv6 network protocols).
+
+>>> [C] DISCARDED FILLER TEXT (WHAT WAS SAFELY REMOVED):
+----------------------------------------------------------------------
+  ❌ REMOVED: 5 S ECURITY AND P RIVACY C ONTROLS FOR I NFORMATION S YSTEMS AND O RGANIZATIONS _________________________________________________________________________________________________ CHAPTER THREE PAGE 298 This publication is available free of charge from: https://doi.org/10.6028/NIST.SP.800 - 53r5 Related Controls: AC-4 , AC-17 , AC-18 , AC-19 , AC-20 , AU-13 , CA-3 , CM-2 , CM-4 , CM-7 , CM-10 , CP- 8 , CP-10 , IR-4 , MA-4 , PE-3 , PL-8 , PM-12 , SA-8 , SA-17 , SC-5 , SC-26 , SC-32 , SC-35 , SC-43.
+  ❌ REMOVED: Discussion: Limiting the number of external network connections facilitates monitoring of inbound and outbound communications traffic.
+  ❌ REMOVED: The Trusted Internet Connection [ DHS TIC ] initiative is an example of a federal guideline that requires limits on the number of external network connections.
+  ❌ REMOVED: Such transitions may require implementing the older and newer technologies simultaneously during the transition period and thus increase the number of access points to the system
+
+----------------------------------------------------------------------------------------------------
+
+====================================================================================================
+ 🤖 FULL GENERATED LLM ANSWERS (SIDE-BY-SIDE QUALITY COMPARISON)
+====================================================================================================
+
+--- [ANSWER A: USING FULL RAW UNCOMPRESSED CHUNKS] ---
+Based on the provided NIST SP 800-53 Rev. 5 context, the **SC-7 Boundary Protection** control entails the following requirements for network defense:
+
+### Core Control Requirements
+SC-7 mandates three specific actions to protect system boundaries:
+1.  **Monitor and Control Communications:** Organizations must monitor and control communications at:
+    *   External managed interfaces to the system.
+    *   Key internal managed interfaces within the system.
+2.  **Implement Subnetworks for Public Access:** Publicly accessible system components must be placed in subnetworks that are either **physically** or **logically** separated from internal organizational networks. These separated subnetworks are referred to as **Demilitarized Zones (DMZs)**.
+3.  **Managed Interfaces for External Connections:** Connections to external networks or systems must occur **only** through managed interfaces. These interfaces must consist of boundary protection devices arranged in accordance with an organizational security and privacy architecture.
+
+### Definition of Managed Interfaces
+The context defines **managed interfaces** as including:
+*   Gateways
+*   Routers
+*   Firewalls
+*   Guards
+*   Network-based malicious code analysis
+*   Virtualization systems
+*   Encrypted tunnels
+
+### Control Enhancements
+*   **SC-7(1) Physically Separated Subnetworks:** This enhancement has been **withdrawn** and incorporated into the base SC-7 control.
+*   **SC-7(2) Public Access:** This enhancement has been **withdrawn** and incorporated into the base SC-7 control.
+*   **SC-7(3) Access Points:** This enhancement requires limiting the number of external network connections to the system.
+    *   **Purpose:** Limiting connections facilitates the monitoring of inbound and outbound communications traffic.
+    *   **Context:** This is particularly important during technology transitions (e.g., IPv4 to IPv6) where simultaneous use of old and new technologies may increase the number of access points. The Trusted Internet Connection (TIC) initiative is cited as an example of a federal guideline requiring such limits.
+
+### Related Controls
+SC-7 is related to numerous other controls, including AC-4, AC-17, AC-18, AC-19, AC-20, AU-13, CA-3, CM-2, CM-4, CM-7, CM-10, CP-8, CP-10, IR-4, MA-4, PE-3, PL-8, PM-12, SA-8, SA-17, SC-5, SC-26, SC-32, SC-35, and SC-43.
+
+--- [ANSWER B: USING FILTERED COMPRESSED CHUNKS] ---
+Based on the provided context from NIST SP 800-53r5, **SC-7 Boundary Protection** entails the following for network defense:
+
+1.  **Core Control Objective**: The primary purpose of SC-7 is to protect the system boundary. While the specific text of the control statement is truncated in the provided snippet ("Control: a."), the context indicates it focuses on managing and securing the perimeter between the system and external networks.
+
+2.  **Limiting External Connections**: A key enhancement, **SC-7(3) Access Points**, explicitly requires organizations to **limit the number of external network connections** to the system.
+    *   **Rationale**: This is particularly important during technology transition periods (e.g., migrating from IPv4 to IPv6) to reduce the attack surface and manage complexity.
+
+3.  **Withdrawn Enhancements (Incorporated into Base Control)**:
+    *   **SC-7(1) Physically Separated Subnetworks**: This enhancement was withdrawn and its requirements were **incorporated directly into the base SC-7 control**. This implies that physical separation of subnetworks is now a fundamental aspect of boundary protection rather than an optional enhancement.
+    *   **SC-7(2) Public Access**: Similarly, this enhancement was withdrawn and **incorporated into the base SC-7 control**, indicating that managing public access is a core component of boundary protection.
+
+4.  **Assurance Level**: SC-7 is designated as a **System (S)** level control, meaning it is implemented at the system level rather than the organization level.
+
+**In summary**, SC-7 Boundary Protection for network defense involves securing the system perimeter by incorporating physical separation of subnetworks and public access management into the base control, and actively limiting the number of external network connection points to reduce risk, especially during technological transitions.
+
+🔍 QUALITY OBSERVATION:
+Notice that Answer B captures all the critical technical details, control numbers, and requirements,
+while omitting the irrelevant legal boilerplate and surrounding noise from the prompt.
+
